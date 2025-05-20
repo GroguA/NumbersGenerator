@@ -14,6 +14,7 @@ final class FibonacciGenerator: INumberGenerator {
     func generateNext(count: Int) -> [Int] {
         var result = [Int]()
         result.reserveCapacity(count)
+        
         for _ in 0..<count {
             let (sum, overflow) = pair.0.addingReportingOverflow(pair.1)
             if overflow {

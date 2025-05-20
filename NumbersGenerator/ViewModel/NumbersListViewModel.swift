@@ -44,6 +44,7 @@ final class NumbersListViewModel: ObservableObject {
     
     func itemAppeared(at index: Int) {
         let triggerIndex = max(numbers.count - preloadTriggerCount, 0)
+        
         if index >= triggerIndex && !isLoading {
             loadMore()
         }
