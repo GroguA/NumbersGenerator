@@ -9,9 +9,11 @@ import Foundation
 
 final class FibonacciGenerator: INumberGenerator {
     private var pair: (Int, Int) = (0, 1)
-    private(set) var isExhausted = false
+    private var isExhausted = false
     
     func generateNext(count: Int) -> [Int] {
+        guard !isExhausted else { return [] }
+        
         var result = [Int]()
         result.reserveCapacity(count)
         

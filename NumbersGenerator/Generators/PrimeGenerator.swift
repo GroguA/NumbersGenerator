@@ -7,13 +7,16 @@
 
 import Foundation
 
-final class PrimeGenerator: INumberGenerator {
+final class PrimeGenerator: INumberGenerator {    
     private var generatedNumbers = [1]
     
     func generateNext(count: Int) -> [Int] {
         var newNumbers = [Int]()
         newNumbers.reserveCapacity(count)
-        var nextNumber = generatedNumbers.last! + 1
+        
+        guard let lastNumber = generatedNumbers.last else { return [] }
+        
+        var nextNumber = lastNumber + 1
         
         while newNumbers.count < count {
             if isPrime(nextNumber) {
@@ -29,7 +32,9 @@ final class PrimeGenerator: INumberGenerator {
     func isPrime(_ n: Int) -> Bool {
         guard n >= 2 else { return false }
         if n <= 3 { return true }
+        
         let maxDivisor = Int(sqrt(Double(n)))
+        
         guard maxDivisor >= 2 else { return false }
         
         return !(2...maxDivisor).contains { n % $0 == 0 }
