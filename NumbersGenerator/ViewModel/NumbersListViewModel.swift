@@ -9,30 +9,29 @@ import Foundation
 
 final class NumbersListViewModel: ObservableObject {
     @Published private(set) var numbers: [NumberModel] = []
-    @Published var selectedType: NumberType = .prime {
+    @Published var selectedType: NumberType {
         didSet {
+            numbersGenerator = NumbersGeneratorFactory.makeResolver(for: selectedType)
             resetAndLoad()
         }
     }
     
     private var isLoading = false
-    
-    private let primeGenerator = PrimeGenerator()
-    private let fibonacciGenerator = FibonacciGenerator()
-    private let visibleCount = 30
+    private var numbersGenerator: IGeneratorsResolver
     private let preloadTriggerCount = 5
     
+    init(selectedType: NumberType = .prime) {
+        self.selectedType = selectedType
+        numbersGenerator = NumbersGeneratorFactory.makeResolver(for: selectedType)
+    }
+    
     func loadMore() {
-        if selectedType == .fibonacci && fibonacciGenerator.isExhausted {
-            return
-        }
-        
         guard !isLoading else { return }
         isLoading = true
         
         DispatchQueue.global(qos: .userInitiated).async { [weak self] in
             guard let self = self else { return }
-            let items = getNumbers()
+            let items = mapNumbers(numbersGenerator.getNumbers())
             
             DispatchQueue.main.async { [weak self] in
                 guard let self = self else { return }
@@ -53,27 +52,14 @@ final class NumbersListViewModel: ObservableObject {
 
 private extension NumbersListViewModel {
     func resetAndLoad() {
-        numbers = []
         isLoading = false
-        fibonacciGenerator.reset()
-        primeGenerator.reset()
+        numbers = []
+        numbersGenerator.reset()
         loadMore()
-    }
-    
-    func getNumbers() -> [NumberModel] {
-        let newNumbers: [Int] = {
-            switch self.selectedType {
-            case .prime:
-                return self.primeGenerator.generateNext(count: self.visibleCount)
-            case .fibonacci:
-                return self.fibonacciGenerator.generateNext(count: self.visibleCount)
-            }
-        }()
-        
-        return mapNumbers(newNumbers)
     }
     
     func mapNumbers(_ nums: [Int]) -> [NumberModel] {
         return nums.map { NumberModel(value: $0, type: self.selectedType) }
     }
+    
 }
