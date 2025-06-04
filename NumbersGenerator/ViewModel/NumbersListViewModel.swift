@@ -16,7 +16,8 @@ final class NumbersListViewModel: ObservableObject {
         }
     }
     
-    private var isLoading = false
+    @Published private var isLoading: Bool = false
+    
     private let generatorsResolver: IGeneratorsResolver
     private let preloadTriggerCount = 5
     
