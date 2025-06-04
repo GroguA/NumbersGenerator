@@ -11,18 +11,18 @@ final class NumbersListViewModel: ObservableObject {
     @Published private(set) var numbers: [NumberModel] = []
     @Published var selectedType: NumberType {
         didSet {
-            numbersGenerator = NumbersGeneratorFactory.makeResolver(for: selectedType)
+            generatorsResolver.setCurrentType(selectedType)
             resetAndLoad()
         }
     }
     
     private var isLoading = false
-    private var numbersGenerator: IGeneratorsResolver
+    private let generatorsResolver: IGeneratorsResolver
     private let preloadTriggerCount = 5
     
     init(selectedType: NumberType = .prime) {
         self.selectedType = selectedType
-        numbersGenerator = NumbersGeneratorFactory.makeResolver(for: selectedType)
+        self.generatorsResolver = GeneratorsResolver(currentType: selectedType)
     }
     
     func loadMore() {
@@ -30,12 +30,12 @@ final class NumbersListViewModel: ObservableObject {
         isLoading = true
         
         DispatchQueue.global(qos: .userInitiated).async { [weak self] in
-            guard let self = self else { return }
-            let items = mapNumbers(numbersGenerator.getNumbers())
+            guard let self = self, let items = generatorsResolver.getNumbers() else { return }
+            let mappedNumbers = mapNumbers(items)
             
             DispatchQueue.main.async { [weak self] in
                 guard let self = self else { return }
-                self.numbers += items
+                self.numbers += mappedNumbers
                 self.isLoading = false
             }
         }
@@ -54,7 +54,7 @@ private extension NumbersListViewModel {
     func resetAndLoad() {
         isLoading = false
         numbers = []
-        numbersGenerator.reset()
+        generatorsResolver.reset()
         loadMore()
     }
     

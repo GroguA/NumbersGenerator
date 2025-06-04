@@ -12,3 +12,13 @@ enum NumberType: String, CaseIterable {
     case fibonacci = "Fibonacci"
 }
 
+extension NumberType {
+    func makeGenerator() -> INumberGenerator {
+        switch self {
+        case .prime:
+            return PrimeGenerator()
+        case .fibonacci:
+            return FibonacciGenerator()
+        }
+    }
+}
