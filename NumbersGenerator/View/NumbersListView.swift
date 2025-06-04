@@ -17,28 +17,36 @@ struct NumbersListView: View {
     
     var body: some View {
         NavigationView {
-            VStack(spacing: 0) {
+            VStack {
                 Picker("Number Type", selection: $viewModel.selectedType) {
                     ForEach(NumberType.allCases, id: \.self) { state in
                         Text(state.rawValue)
                     }
                 }
                 .pickerStyle(.segmented)
-                .padding([.horizontal])
+                .padding(.horizontal)
                 
-                ScrollView {
-                    LazyVGrid(columns: columns) {
-                        ForEach(Array(viewModel.numbers.enumerated()), id: \.element.id) { index, item in
-                            NumberCell(item: item, index: index)
-                                .onAppear {
-                                    viewModel.itemAppeared(at: index)
-                                }
+                ZStack {
+                    ScrollView {
+                        LazyVGrid(columns: columns) {
+                            ForEach(Array(viewModel.numbers.enumerated()), id: \.element.id) { index, item in
+                                NumberCell(item: item, index: index)
+                                    .onAppear {
+                                        viewModel.itemAppeared(at: index)
+                                    }
+                            }
                         }
-                        
+                        .padding()
                     }
-                    .padding()
+                    .id(viewModel.selectedType)
+                    .blur(radius: viewModel.isLoading ? 5 : 0)
+                    .disabled(viewModel.isLoading)
+                    
+                    if viewModel.isLoading {
+                        ProgressView()
+                            .scaleEffect(1.5)
+                    }
                 }
-                .id(viewModel.selectedType)
             }
             .navigationTitle("Numbers")
             .navigationBarTitleDisplayMode(.inline)
