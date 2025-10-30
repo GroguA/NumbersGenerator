@@ -8,8 +8,8 @@
 import Foundation
 
 protocol IGeneratorsResolver {
+    func createNumberGenerator() -> INumberGenerator
     func getNumbers() -> [Int]?
     func setCurrentType(_ type: NumberType)
-    func reset()
     func addGenerator(for type: NumberType, generator: INumberGenerator)
 }

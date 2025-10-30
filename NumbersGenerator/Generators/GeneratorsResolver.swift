@@ -15,24 +15,24 @@ final class GeneratorsResolver: IGeneratorsResolver {
     init(currentType: NumberType, visibleCount: Int = 30) {
         self.currentType = currentType
         self.visibleCount = visibleCount
-        
-        for type in NumberType.allCases {
-            generators[type] = type.makeGenerator()
-        }
     }
     
     func setCurrentType(_ type: NumberType) {
         currentType = type
     }
     
-    func getNumbers() -> [Int]? {
-        guard let generator = generators[currentType] else { return nil }
-        return generator.generateNext(count: visibleCount)
+    func createNumberGenerator() -> INumberGenerator {
+        let generator = generators[currentType] ?? {
+            let newGen = currentType.makeGenerator()
+            generators[currentType] = newGen
+            return newGen
+        }()
+        return generator
     }
     
-    func reset() {
-        guard let generator = generators[currentType] else { return }
-        generator.reset()
+    func getNumbers() -> [Int]? {
+        let generator = createNumberGenerator()
+        return generator.generateNext(count: visibleCount)
     }
     
     func addGenerator(for type: NumberType, generator: INumberGenerator) {

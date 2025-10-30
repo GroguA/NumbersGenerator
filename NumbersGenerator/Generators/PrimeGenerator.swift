@@ -40,8 +40,4 @@ final class PrimeGenerator: INumberGenerator {
         return !(2...maxDivisor).contains { n % $0 == 0 }
     }
     
-    
-    func reset() {
-        generatedNumbers = [1]
-    }
 }

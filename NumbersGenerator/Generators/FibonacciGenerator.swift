@@ -29,9 +29,4 @@ final class FibonacciGenerator: INumberGenerator {
         return result
     }
     
-    
-    func reset() {
-        pair = (0, 1)
-        isExhausted = false
-    }
 }
