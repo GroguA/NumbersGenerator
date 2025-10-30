@@ -9,5 +9,4 @@ import Foundation
 
 protocol INumberGenerator {
     func generateNext(count: Int) -> [Int]
-    func reset()
 }

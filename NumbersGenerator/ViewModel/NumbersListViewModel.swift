@@ -9,21 +9,34 @@ import Foundation
 
 final class NumbersListViewModel: ObservableObject {
     @Published private(set) var numbers: [NumberModel] = []
+    @Published private(set) var isLoading: Bool = false
     @Published var selectedType: NumberType {
         didSet {
             generatorsResolver.setCurrentType(selectedType)
-            resetAndLoad()
+            
+            if let cached = cachedNumbers[selectedType] {
+                numbers = cached
+            } else {
+                numbers.removeAll()
+                loadMore()
+            }
         }
     }
     
-    @Published private var isLoading: Bool = false
+    private var cachedNumbers: [NumberType: [NumberModel]] = [:]
     
     private let generatorsResolver: IGeneratorsResolver
     private let preloadTriggerCount = 5
     
-    init(selectedType: NumberType = .prime) {
+    init(selectedType: NumberType = .prime, generatorsResolver: IGeneratorsResolver? = nil) {
         self.selectedType = selectedType
-        self.generatorsResolver = GeneratorsResolver(currentType: selectedType)
+        
+        if let resolver = generatorsResolver {
+            self.generatorsResolver = resolver
+        } else {
+            self.generatorsResolver = GeneratorsResolver(currentType: selectedType)
+        }
+        self.generatorsResolver.setCurrentType(selectedType)
     }
     
     func loadMore() {
@@ -31,12 +44,13 @@ final class NumbersListViewModel: ObservableObject {
         isLoading = true
         
         DispatchQueue.global(qos: .userInitiated).async { [weak self] in
-            guard let self = self, let items = generatorsResolver.getNumbers() else { return }
+            guard let self, let items = generatorsResolver.getNumbers() else { return }
             let mappedNumbers = mapNumbers(items)
             
             DispatchQueue.main.async { [weak self] in
-                guard let self = self else { return }
+                guard let self else { return }
                 self.numbers += mappedNumbers
+                self.cachedNumbers[selectedType] = numbers
                 self.isLoading = false
             }
         }
@@ -52,13 +66,6 @@ final class NumbersListViewModel: ObservableObject {
 }
 
 private extension NumbersListViewModel {
-    func resetAndLoad() {
-        isLoading = false
-        numbers = []
-        generatorsResolver.reset()
-        loadMore()
-    }
-    
     func mapNumbers(_ nums: [Int]) -> [NumberModel] {
         return nums.map { NumberModel(value: $0, type: self.selectedType) }
     }
